@@ -26,4 +26,7 @@ with tf.Session() as sess:
         str_vec = vectorization(str, data_loader.char_to_indices)
         strokes = model.sample(sess, len(str) * args.points_per_char, str=str_vec)
     print strokes
+    import pickle
+    with open('strokes.pkl', 'wb') as f:
+        pickle.dump(strokes, f)
     draw_strokes_random_color(strokes, factor=0.1, svg_filename='sample' + '.normal.svg')
