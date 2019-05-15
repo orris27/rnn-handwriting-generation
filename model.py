@@ -17,12 +17,12 @@ class Model():
             args.b == 0
         self.args = args
 
-        self.x = tf.placeholder(dtype=tf.float32, shape=[None, args.T, 3])
+        self.x = tf.placeholder(dtype=tf.float32, shape=[None, args.T, 3]) # args.T=300, (batch_size, T, 3)
         self.y = tf.placeholder(dtype=tf.float32, shape=[None, args.T, 3])
 
         #x = tf.split(1, args.T, self.x)
-        x = tf.split(self.x, args.T, 1)
-        x_list = [tf.squeeze(x_i, [1]) for x_i in x]
+        x = tf.split(self.x, args.T, 1) # (T, batch_size, 1, 3)
+        x_list = [tf.squeeze(x_i, [1]) for x_i in x] # (T, batch_size, 3)
         if args.mode == 'predict':
             self.cell = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_state_size)
             self.stacked_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * args.num_layers)
@@ -30,8 +30,8 @@ class Model():
             #     self.stacked_cell = tf.nn.rnn_cell.DropoutWrapper(self.stacked_cell, output_keep_prob=args.keep_prob)
             self.init_state = self.stacked_cell.zero_state(args.batch_size, tf.float32)
 
-            self.output_list, self.final_state = tf.nn.rnn(self.stacked_cell, x_list, self.init_state)
-            #self.output_list, self.final_state = tf.nn.dynamic_rnn(self.stacked_cell, x_list, self.init_state)
+            #self.output_list, self.final_state = tf.nn.rnn(self.stacked_cell, x_list, self.init_state)
+            self.output_list, self.final_state = tf.nn.dynamic_rnn(self.stacked_cell, tf.transpose(x_list, perm=[1, 0, 2]), self.init_state)
             # self.output_list, self.final_state = tf.nn.seq2seq.rnn_decoder(x_list, self.init_state, self.stacked_cell)
         if args.mode == 'synthesis':
             self.c_vec = tf.placeholder(dtype=tf.float32, shape=[None, args.U, args.c_dimension])
