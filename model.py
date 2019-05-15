@@ -91,7 +91,9 @@ class Model():
         output_w = tf.Variable(tf.constant(0.1, dtype=tf.float32, shape=[args.rnn_state_size, NOUT])) # args.rnn_state_size=400
         output_b = tf.Variable(tf.constant(0.1, dtype=tf.float32, shape=[NOUT]))
 
-        self.output = tf.nn.xw_plus_b(tf.reshape(tf.concat(1, self.output_list), [-1, args.rnn_state_size]),
+#        self.output = tf.nn.xw_plus_b(tf.reshape(tf.concat(1, self.output_list), [-1, args.rnn_state_size]),
+#                                      output_w, output_b)
+        self.output = tf.nn.xw_plus_b(tf.reshape(tf.concat(self.output_list, 1), [-1, args.rnn_state_size]),
                                       output_w, output_b)
         y1, y2, y_end_of_stroke = tf.unpack(tf.reshape(self.y, [-1, 3]), axis=1)
 
