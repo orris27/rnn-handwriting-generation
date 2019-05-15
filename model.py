@@ -24,8 +24,15 @@ class Model():
         x = tf.split(self.x, args.T, 1) # (T, batch_size, 1, 3)
         x_list = [tf.squeeze(x_i, [1]) for x_i in x] # (T, batch_size, 3)
         if args.mode == 'predict':
-            self.cell = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_state_size) # args.rnn_state_size=400
-            self.stacked_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * args.num_layers) # args.num_layers=2
+            #self.cell = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_state_size) # args.rnn_state_size=400
+
+            #self.stacked_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * args.num_layers) # args.num_layers=2
+            def create_lstm_cell(lstm_size):
+                lstm_cell = tf.contrib.rnn.BasicLSTMCell(lstm_size, state_is_tuple=True)
+                return lstm_cell
+            self.stacked_cell = tf.nn.rnn_cell.MultiRNNCell([create_lstm_cell(args.rnn_state_size) for _ in range(args.num_layers)])
+
+
             # if (args.keep_prob < 1):  # training mode
             #     self.stacked_cell = tf.nn.rnn_cell.DropoutWrapper(self.stacked_cell, output_keep_prob=args.keep_prob)
             self.init_state = self.stacked_cell.zero_state(args.batch_size, tf.float32)
