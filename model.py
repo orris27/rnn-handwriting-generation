@@ -99,7 +99,8 @@ class Model():
         y1, y2, y_end_of_stroke = tf.unstack(tf.reshape(self.y, [-1, 3]), axis=1)
 
         self.end_of_stroke = 1 / (1 + tf.exp(self.output[:, 0]))
-        pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = tf.split(1, 6, self.output[:, 1:])
+        #pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = tf.split(1, 6, self.output[:, 1:])
+        pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = tf.split(self.output[:, 1:], 6, 1)
         pi_exp = tf.exp(pi_hat * (1 + args.b))
         pi_exp_sum = tf.reduce_sum(pi_exp, 1)
         self.pi = pi_exp / expand(pi_exp_sum, 1, args.M)
