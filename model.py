@@ -30,8 +30,8 @@ class Model():
             #     self.stacked_cell = tf.nn.rnn_cell.DropoutWrapper(self.stacked_cell, output_keep_prob=args.keep_prob)
             self.init_state = self.stacked_cell.zero_state(args.batch_size, tf.float32)
 
-            #self.output_list, self.final_state = tf.nn.rnn(self.stacked_cell, x_list, self.init_state)
-            self.output_list, self.final_state = tf.nn.dynamic_rnn(self.stacked_cell, x_list, self.init_state)
+            self.output_list, self.final_state = tf.nn.rnn(self.stacked_cell, x_list, self.init_state)
+            #self.output_list, self.final_state = tf.nn.dynamic_rnn(self.stacked_cell, x_list, self.init_state)
             # self.output_list, self.final_state = tf.nn.seq2seq.rnn_decoder(x_list, self.init_state, self.stacked_cell)
         if args.mode == 'synthesis':
             self.c_vec = tf.placeholder(dtype=tf.float32, shape=[None, args.U, args.c_dimension])
@@ -79,8 +79,9 @@ class Model():
             self.final_cell2_state = cell2_state
             self.final_w = w
 
+        # args.M=20
         NOUT = 1 + args.M * 6  # end_of_stroke, num_of_gaussian * (pi + 2 * (mu + sigma) + rho)
-        output_w = tf.Variable(tf.constant(0.1, dtype=tf.float32, shape=[args.rnn_state_size, NOUT]))
+        output_w = tf.Variable(tf.constant(0.1, dtype=tf.float32, shape=[args.rnn_state_size, NOUT])) # args.rnn_state_size=400
         output_b = tf.Variable(tf.constant(0.1, dtype=tf.float32, shape=[NOUT]))
 
         self.output = tf.nn.xw_plus_b(tf.reshape(tf.concat(1, self.output_list), [-1, args.rnn_state_size]),
