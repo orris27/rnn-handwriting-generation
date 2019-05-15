@@ -94,15 +94,15 @@ class Model():
 
 #        self.output = tf.nn.xw_plus_b(tf.reshape(tf.concat(1, self.output_list), [-1, args.rnn_state_size]),
 #                                      output_w, output_b)
-        self.output = tf.nn.xw_plus_b(tf.reshape(tf.concat(self.output_list, 1), [-1, args.rnn_state_size]),
-                                      output_w, output_b)
+        self.output = tf.nn.xw_plus_b(tf.reshape(tf.concat(self.output_list, 1), [-1, args.rnn_state_size]), 
+                                      output_w, output_b) # (batch_size, NOUT=121)
         #y1, y2, y_end_of_stroke = tf.unpack(tf.reshape(self.y, [-1, 3]), axis=1)
         y1, y2, y_end_of_stroke = tf.unstack(tf.reshape(self.y, [-1, 3]), axis=1)
 
-        self.end_of_stroke = 1 / (1 + tf.exp(self.output[:, 0]))
+        self.end_of_stroke = 1 / (1 + tf.exp(self.output[:, 0])) # (?,), 
         #pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = tf.split(1, 6, self.output[:, 1:])
         pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = tf.split(self.output[:, 1:], 6, 1)
-        pi_exp = tf.exp(pi_hat * (1 + args.b))
+        pi_exp = tf.exp(pi_hat * (1 + args.b)) # args.b=3
         pi_exp_sum = tf.reduce_sum(pi_exp, 1)
         self.pi = pi_exp / expand(pi_exp_sum, 1, args.M)
         self.sigma1 = tf.exp(sigma1_hat - args.b)
@@ -115,7 +115,7 @@ class Model():
         eps = 1e-20
         self.loss_gaussian = tf.reduce_sum(-tf.log(tf.reduce_sum(self.gaussian, 1) + eps))
         self.loss_bernoulli = tf.reduce_sum(
-            -tf.log((self.end_of_stroke + eps) * y_end_of_stroke
+            -tf.log((self.end_of_stroke + eps) * y_end_of_stroke # e_t * (x_{t+1})_3 + (1 - e_t) * (1 - (x_{t+1})_3)
                     + (1 - self.end_of_stroke + eps) * (1 - y_end_of_stroke))
         )
 
@@ -125,7 +125,7 @@ class Model():
 
     def sample(self, sess, length, str=None):
         x = np.zeros([1, 1, 3], np.float32)
-        x[0, 0, 2] = 1
+        x[0, 0, 2] = 1 # The first point state is set to be 1
         strokes = np.zeros([length, 3], dtype=np.float32)
         strokes[0, :] = x[0, 0, :]
         if self.args.mode == 'predict':
@@ -174,7 +174,7 @@ class Model():
                          [rho[0, m] * sigma1[0, m] * sigma2[0, m], np.square(sigma2[0, m])]]
                     )
                     break
-            e = np.random.rand()
+            e = np.random.rand() # bernouli
             if e < end_of_stroke:
                 x[0, 0, 2] = 1
             else:
