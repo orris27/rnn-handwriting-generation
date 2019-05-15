@@ -38,7 +38,7 @@ class Model():
             self.init_state = self.stacked_cell.zero_state(args.batch_size, tf.float32)
 
             #self.output_list, self.final_state = tf.nn.rnn(self.stacked_cell, x_list, self.init_state)
-            self.output_list, self.final_state = tf.nn.dynamic_rnn(self.stacked_cell, tf.transpose(x_list, perm=[1, 0, 2]), intial_state=self.init_state)
+            self.output_list, self.final_state = tf.nn.dynamic_rnn(self.stacked_cell, tf.transpose(x_list, perm=[1, 0, 2]), initial_state=self.init_state)
             # self.output_list, self.final_state = tf.nn.seq2seq.rnn_decoder(x_list, self.init_state, self.stacked_cell)
         if args.mode == 'synthesis':
             self.c_vec = tf.placeholder(dtype=tf.float32, shape=[None, args.U, args.c_dimension])
