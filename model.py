@@ -11,7 +11,8 @@ class Model():
                    (2 * np.pi * sigma1 * sigma2 * tf.sqrt(1 - tf.square(rho)))
 
         def expand(x, dim, N):
-            return tf.concat(dim, [tf.expand_dims(x, dim) for _ in range(N)])
+            #return tf.concat(dim, [tf.expand_dims(x, dim) for _ in range(N)])
+            return tf.concat([tf.expand_dims(x, dim) for _ in range(N)], dim)
 
         if args.action == 'train':
             args.b == 0
