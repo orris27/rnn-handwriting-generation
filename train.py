@@ -20,6 +20,9 @@ with tf.Session() as sess:
         data_loader.reset_batch_pointer()
         for b in range(data_loader.num_batches):
             x, y, c_vec, c = data_loader.next_batch()
+            import pickle
+            with open('x.pkl', 'wb') as f:
+                pickle.dump(x, f)
             if args.mode == 'predict':
                 feed_dict = {model.x: x, model.y: y}
             if args.mode == 'synthesis':
