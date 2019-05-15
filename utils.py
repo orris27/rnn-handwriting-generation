@@ -117,13 +117,8 @@ def draw_strokes_custom_color(data, factor=10, svg_filename = 'test.svg', color_
 
         dwg.add(dwg.path(p).stroke(the_color,stroke_width).fill(the_color))
     dwg.save()
-    #display(SVG(dwg.tostring()))
+    display(SVG(dwg.tostring()))
 
-    #debug
-    debug_svg = SVG(dwg.tostring())
-    with open("test1.svg", "wb") as f:
-        print('Start writing')
-        f.write(debug_svg)
 
 def draw_strokes_pdf(data, param, factor=10, svg_filename = 'sample_pdf.svg'):
     min_x, max_x, min_y, max_y = get_bounds(data, factor)
