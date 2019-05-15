@@ -20,7 +20,8 @@ class Model():
         self.x = tf.placeholder(dtype=tf.float32, shape=[None, args.T, 3])
         self.y = tf.placeholder(dtype=tf.float32, shape=[None, args.T, 3])
 
-        x = tf.split(1, args.T, self.x)
+        #x = tf.split(1, args.T, self.x)
+        x = tf.split(self.x, args.T, 1)
         x_list = [tf.squeeze(x_i, [1]) for x_i in x]
         if args.mode == 'predict':
             self.cell = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_state_size)
