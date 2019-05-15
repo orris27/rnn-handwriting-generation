@@ -122,6 +122,7 @@ def draw_strokes_custom_color(data, factor=10, svg_filename = 'test.svg', color_
     #debug
     debug_svg = SVG(dwg.tostring())
     with open("test1.svg", "wb") as f:
+        print('Start writing')
         f.write(debug_svg)
 
 def draw_strokes_pdf(data, param, factor=10, svg_filename = 'sample_pdf.svg'):
