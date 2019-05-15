@@ -11,7 +11,7 @@ args.U = data_loader.max_U
 args.c_dimension = len(data_loader.chars) + 1
 args.action = 'train'
 
-model = m.Model(args)
+#model = m.Model(args)
 with tf.Session() as sess:
     tf.initialize_all_variables().run()
     saver = tf.train.Saver(tf.all_variables())
