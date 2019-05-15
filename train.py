@@ -11,10 +11,10 @@ args.U = data_loader.max_U
 args.c_dimension = len(data_loader.chars) + 1
 args.action = 'train'
 
-#model = m.Model(args)
+model = m.Model(args)
 with tf.Session() as sess:
     tf.initialize_all_variables().run()
-    #saver = tf.train.Saver(tf.all_variables())
+    saver = tf.train.Saver(tf.all_variables())
     for e in range(args.num_epochs):
         print "epoch %d" % e
         data_loader.reset_batch_pointer()
