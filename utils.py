@@ -304,7 +304,7 @@ class DataLoader():
         print("%d strokes available" % len(self.data))
         # minus 1, since we want the ydata to be a shifted version of x data
         self.num_batches = int(counter / self.batch_size)
-        self.max_U = self.seq_length / self.points_per_char
+        self.max_U = int(self.seq_length / self.points_per_char)
         self.char_to_indices = dict((c, i + 1) for i, c in enumerate(self.chars)) # 0 for unknown
         self.c_vec = []
         for i in range(len(self.c)):
