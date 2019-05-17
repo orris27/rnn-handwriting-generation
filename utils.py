@@ -259,7 +259,7 @@ class DataLoader():
                     if (i + num + 1 < len(txt)):
                         return txt[i + num + 1][0:-1]
                     else:
-                        print "error in " + filename
+                        print("error in " + filename)
                         return None
 
         # build stroke database of every xml file inside iam database
@@ -301,7 +301,7 @@ class DataLoader():
                 self.c.append(self.raw_c[i])
                 counter += int(len(data)/((self.seq_length+2))) # number of equiv batches this datapoint is worth
 
-        print "%d strokes available" % len(self.data)
+        print("%d strokes available" % len(self.data))
         # minus 1, since we want the ydata to be a shifted version of x data
         self.num_batches = int(counter / self.batch_size)
         self.max_U = self.seq_length / self.points_per_char
