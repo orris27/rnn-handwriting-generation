@@ -16,61 +16,33 @@ class Model(torch.nn.Module):
 
         self.NOUT = 1 + self.args.M * 6  # end_of_stroke, num_of_gaussian * (pi + 2 * (mu + sigma) + rho)
         self.fc_output = torch.nn.Linear(args.rnn_state_size, self.NOUT)
-
-
-#        #self.cell = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_state_size) # args.rnn_state_size=400
-#        #self.stacked_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * args.num_layers) # args.num_layers=2
-#        def create_lstm_cell(lstm_size):
-#            lstm_cell = tf.contrib.rnn.BasicLSTMCell(lstm_size, state_is_tuple=True)
-#            return lstm_cell
-#        self.stacked_cell = tf.nn.rnn_cell.MultiRNNCell([create_lstm_cell(args.rnn_state_size) for _ in range(args.num_layers)])
         self.stacked_cell = torch.nn.LSTM(input_size=3, hidden_size=args.rnn_state_size, num_layers=2, batch_first=True)
 
         self.optimizer = torch.optim.Adam(params=self.parameters(), lr=args.learning_rate)
 
     def _expand(self, x, dim, N):
-        #return tf.concat(dim, [tf.expand_dims(x, dim) for _ in range(N)])
         return torch.cat([x.unsqueeze(dim) for _ in range(N)], dim)
-        
+
+    def _bivariate_gaussian(self, x1, x2, mu1, mu2, sigma1, sigma2, rho):
+        z = torch.pow((x1 - mu1) / sigma1, 2) + torch.pow((x2 - mu2) / sigma2, 2) \
+            - 2 * rho * (x1 - mu1) * (x2 - mu2) / (sigma1 * sigma2)
+        return torch.exp(-z / (2 * (1 - torch.pow(rho, 2)))) / \
+               (2 * np.pi * sigma1 * sigma2 * torch.sqrt(1 - torch.pow(rho, 2)))
+   
+
     def fit(self, x, y):
         '''
             x: (batch_size, args.T, 3) # args.T=300 if train else 1, (batch_size, T, 3)
             y: (batch_size, args.T, 3)
         '''
-        def bivariate_gaussian(x1, x2, mu1, mu2, sigma1, sigma2, rho):
-            z = torch.pow((x1 - mu1) / sigma1, 2) + torch.pow((x2 - mu2) / sigma2, 2) \
-                - 2 * rho * (x1 - mu1) * (x2 - mu2) / (sigma1 * sigma2)
-            return torch.exp(-z / (2 * (1 - torch.pow(rho, 2)))) / \
-                   (2 * np.pi * sigma1 * sigma2 * torch.sqrt(1 - torch.pow(rho, 2)))
-        self.x = torch.Tensor(x).to(device)
-        self.y = torch.Tensor(y).to(device)
+        x = torch.Tensor(x).to(device)
+        y = torch.Tensor(y).to(device)
 
-        #x = torch.split(self.x, self.args.T, 1) # (T, batch_size, 1, 3)
-        #x_list = [tf.squeeze(x_i, [1]) for x_i in x] # (T, batch_size, 3)
-        #x_list = torch.stack([torch.squeeze(x_i, dim=1) for x_i in x]) # (T, batch_size, 3)
+        self.output_list, self.final_state = self.stacked_cell(x)
 
-#        self.init_state = self.stacked_cell.zero_state(args.batch_size, tf.float32)
-#        #self.output_list, self.final_state = tf.nn.rnn(self.stacked_cell, x_list, self.init_state)
-#        self.output_list, self.final_state = tf.nn.dynamic_rnn(self.stacked_cell, tf.transpose(x_list, perm=[1, 0, 2]), initial_state=self.init_state)
-
-        #self.output_list, self.final_state = self.stacked_cell(torch.transpose(x_list, 0, 1))
-        self.output_list, self.final_state = self.stacked_cell(self.x)
-
-
-
-#        output_w = tf.Variable(tf.constant(0.1, dtype=tf.float32, shape=[args.rnn_state_size, NOUT])) # args.rnn_state_size=400
-#        output_b = tf.Variable(tf.constant(0.1, dtype=tf.float32, shape=[NOUT]))
-
-
-#        self.output = tf.nn.xw_plus_b(tf.reshape(tf.concat(self.output_list, 1), [-1, args.rnn_state_size]), 
-#                                      output_w, output_b) # (batch_size, NOUT=121)
-
-        #self.output = self.fc_output((torch.cat(self.output_list, 1).view(-1, args.rnn_state_size)))
-        #self.output = self.fc_output(self.output_list.view(-1, self.args.rnn_state_size))
         self.output = self.fc_output(self.output_list.reshape(-1, self.args.rnn_state_size))
 
-        #y1, y2, y_end_of_stroke = tf.unstack(tf.reshape(self.y, [-1, 3]), axis=1)
-        y1, y2, y_end_of_stroke = torch.unbind(self.y.view(-1, 3), dim=1)
+        y1, y2, y_end_of_stroke = torch.unbind(y.view(-1, 3), dim=1)
 
 
         self.end_of_stroke = 1 / (1 + torch.exp(self.output[:, 0])) # (?,), 
@@ -81,7 +53,7 @@ class Model(torch.nn.Module):
         self.sigma1 = torch.exp(sigma1_hat - self.args.b)
         self.sigma2 = torch.exp(sigma2_hat - self.args.b)
         self.rho = torch.tanh(rho_hat)
-        self.gaussian = self.pi * bivariate_gaussian(
+        self.gaussian = self.pi * self._bivariate_gaussian(
             self._expand(y1, 1, self.args.M), self._expand(y2, 1, self.args.M),
             self.mu1, self.mu2, self.sigma1, self.sigma2, self.rho
         )
@@ -109,15 +81,7 @@ class Model(torch.nn.Module):
         strokes = np.zeros([length, 3], dtype=np.float32)
         strokes[0, :] = x[0, 0, :]
 
-        #state = sess.run(self.stacked_cell.zero_state(1, tf.float32))
-
         for i in range(length - 1):
-#            feed_dict = {self.x: x, self.init_state: state}
-#            end_of_stroke, pi, mu1, mu2, sigma1, sigma2, rho, state = sess.run(
-#                [self.end_of_stroke, self.pi, self.mu1, self.mu2,
-#                 self.sigma1, self.sigma2, self.rho, self.final_state],
-#                feed_dict=feed_dict
-#            )
         
             output_list, final_state = self.stacked_cell(torch.Tensor(x).to(device))
             output = self.fc_output(output_list.reshape(-1, self.args.rnn_state_size))

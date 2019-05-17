@@ -1,4 +1,3 @@
-#import tensorflow as tf
 import numpy as np
 import torch
 import model as m
@@ -10,6 +9,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 data_loader = DataLoader(args.batch_size, args.T, args.data_scale,
                          chars=args.chars, points_per_char=args.points_per_char)
+print('number of batches:', data_loader.num_batches)
 args.U = data_loader.max_U
 args.c_dimension = len(data_loader.chars) + 1
 args.action = 'train'
