@@ -23,4 +23,7 @@ model = model.eval()
 
 strokes = model.sample(800)
 print(strokes)
+import pickle
+with open('strokes.pkl', 'wb') as f:
+    pickle.dump(strokes, f)
 draw_strokes_random_color(strokes, factor=0.1, svg_filename='sample' + '.normal.svg')

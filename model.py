@@ -38,15 +38,15 @@ class Model(torch.nn.Module):
         x = torch.Tensor(x).to(device)
         y = torch.Tensor(y).to(device)
 
-        self.output_list, self.final_state = self.stacked_cell(x)
+        output_list, final_state = self.stacked_cell(x)
 
-        self.output = self.fc_output(self.output_list.reshape(-1, self.args.rnn_state_size))
+        output = self.fc_output(output_list.reshape(-1, self.args.rnn_state_size))
 
         y1, y2, y_end_of_stroke = torch.unbind(y.view(-1, 3), dim=1)
 
 
-        self.end_of_stroke = 1 / (1 + torch.exp(self.output[:, 0])) # (?,), 
-        pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = torch.split(self.output[:, 1:], self.args.M, 1)
+        self.end_of_stroke = 1 / (1 + torch.exp(output[:, 0])) # (?,), 
+        pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = torch.split(output[:, 1:], self.args.M, 1)
         pi_exp = torch.exp(pi_hat * (1 + self.args.b)) # args.b=3
         pi_exp_sum = torch.sum(pi_exp, 1)
         self.pi = pi_exp / self._expand(pi_exp_sum, 1, self.args.M)
