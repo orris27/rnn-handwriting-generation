@@ -3,6 +3,8 @@ import torch
 import numpy as np
 from utils import vectorization
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 class Model(torch.nn.Module):
     def __init__(self, args):
         super(Model, self).__init__()
@@ -40,8 +42,8 @@ class Model(torch.nn.Module):
             x: (batch_size, args.T, 3) # args.T=300 if train else 1, (batch_size, T, 3)
             y: (batch_size, args.T, 3)
         '''
-        self.x = x
-        self.y = y
+        self.x = torch.Tensor(x).to(device)
+        self.y = torch.Tensor(y).to(device)
 
         x = torch.split(self.x, self.args.T, 1) # (T, batch_size, 1, 3)
         #x_list = [tf.squeeze(x_i, [1]) for x_i in x] # (T, batch_size, 3)
