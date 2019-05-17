@@ -47,7 +47,7 @@ class Model(torch.nn.Module):
 
         x = torch.split(self.x, self.args.T, 1) # (T, batch_size, 1, 3)
         #x_list = [tf.squeeze(x_i, [1]) for x_i in x] # (T, batch_size, 3)
-        x_list = [torch.squeeze(x_i, dim=1) for x_i in x] # (T, batch_size, 3)
+        x_list = torch.stack([torch.squeeze(x_i, dim=1) for x_i in x]) # (T, batch_size, 3)
 
 #        self.init_state = self.stacked_cell.zero_state(args.batch_size, tf.float32)
 #        #self.output_list, self.final_state = tf.nn.rnn(self.stacked_cell, x_list, self.init_state)
