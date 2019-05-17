@@ -1,9 +1,11 @@
-import tensorflow as tf
+#import tensorflow as tf
+import torch
 import numpy as np
 import model as m
 from utils import *
 from config import *
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 data_loader = DataLoader(args.batch_size, args.T, args.data_scale,
                          chars=args.chars, points_per_char=args.points_per_char)
 str = 'a quick brown fox jumps over the lazy dog'
@@ -14,19 +16,11 @@ args.T = 1
 args.batch_size = 1
 args.action = 'sample'
 
-model = m.Model(args)
-saver = tf.train.Saver()
-ckpt = tf.train.get_checkpoint_state('save_%s' % args.mode)
+model = m.Model(args).to(device)
 
-with tf.Session() as sess:
-    saver.restore(sess, ckpt.model_checkpoint_path)
-    if args.mode == 'predict':
-        strokes = model.sample(sess, 800)
-    if args.mode == 'synthesis':
-        str_vec = vectorization(str, data_loader.char_to_indices)
-        strokes = model.sample(sess, len(str) * args.points_per_char, str=str_vec)
-    print strokes
-    import pickle
-    with open('strokes.pkl', 'wb') as f:
-        pickle.dump(strokes, f)
-    draw_strokes_random_color(strokes, factor=0.1, svg_filename='sample' + '.normal.svg')
+model.load_state_dict(torch.load(args.model_path))
+model = model.eval()
+
+strokes = model.sample(800)
+print(strokes)
+draw_strokes_random_color(strokes, factor=0.1, svg_filename='sample' + '.normal.svg')

@@ -23,3 +23,4 @@ for e in range(args.num_epochs):
         if b % 100 == 0:
             print('batches %d'%(b), end=':')
             model.fit(x, y)
+    torch.save(model.state_dict(), args.model_path)

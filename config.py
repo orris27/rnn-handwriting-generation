@@ -1,6 +1,8 @@
 import argparse
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--model_path', type=str, default='data/model.pkl',
+                    help='')
 parser.add_argument('--mode', type=str, default='predict',
                     help='predict or synthesis')
 parser.add_argument('--batch_size', type=int, default=50,

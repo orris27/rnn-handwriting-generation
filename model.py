@@ -103,63 +103,47 @@ class Model(torch.nn.Module):
 
 
 
-#    def sample(self, sess, length, str=None):
-#        x = np.zeros([1, 1, 3], np.float32)
-#        x[0, 0, 2] = 1 # The first point state is set to be 1
-#        strokes = np.zeros([length, 3], dtype=np.float32)
-#        strokes[0, :] = x[0, 0, :]
-#
-#        state = sess.run(self.stacked_cell.zero_state(1, tf.float32))
-#
-#        for i in range(length - 1):
-#            if self.args.mode == 'predict':
-#                feed_dict = {self.x: x, self.init_state: state}
-#                end_of_stroke, pi, mu1, mu2, sigma1, sigma2, rho, state = sess.run(
-#                    [self.end_of_stroke, self.pi, self.mu1, self.mu2,
-#                     self.sigma1, self.sigma2, self.rho, self.final_state],
-#                    feed_dict=feed_dict
-#                )
-#            if self.args.mode == 'synthesis':
-#                w_list.append(w[0])
-#                kappa_list.append(kappa[0, :, 0])
-#                feed_dict = {self.x: x,
-#                             self.c_vec: [str],
-#                             self.init_cell1_state: cell1_state,
-#                             self.init_cell2_state: cell2_state,
-#                             self.init_w: w,
-#                             self.init_kappa: kappa}
-#                end_of_stroke, pi, mu1, mu2, sigma1, sigma2, rho, cell1_state, cell2_state, w, phi, kappa = sess.run(
-#                    [self.end_of_stroke, self.pi, self.mu1, self.mu2,
-#                     self.sigma1, self.sigma2, self.rho,
-#                     self.final_cell1_state, self.final_cell2_state, self.final_w, self.phi, self.kappa],
-#                    feed_dict=feed_dict
-#                )
-#                phi_list.append(phi[0, 0, :])
-#            x = np.zeros([1, 1, 3], np.float32)
-#            r = np.random.rand()
-#            accu = 0
-#            for m in range(self.args.M):
-#                accu += pi[0, m]
-#                if accu > r:
-#                    x[0, 0, 0:2] = np.random.multivariate_normal(
-#                        [mu1[0, m], mu2[0, m]],
-#                        [[np.square(sigma1[0, m]), rho[0, m] * sigma1[0, m] * sigma2[0, m]],
-#                         [rho[0, m] * sigma1[0, m] * sigma2[0, m], np.square(sigma2[0, m])]]
-#                    )
-#                    break
-#            e = np.random.rand() # bernouli
-#            if e < end_of_stroke:
-#                x[0, 0, 2] = 1
-#            else:
-#                x[0, 0, 2] = 0
-#            strokes[i + 1, :] = x[0, 0, :]
-#        if self.args.mode == 'synthesis':
-#            # print kappa_list
-#            import matplotlib.pyplot as plt
-#            plt.imshow(kappa_list, interpolation='nearest')
-#            plt.show()
-#            plt.imshow(phi_list, interpolation='nearest')
-#            plt.show()
-#            plt.imshow(w_list, interpolation='nearest')
-#            plt.show()
-#        return strokes
+    def sample(self, length):
+        x = np.zeros([1, 1, 3], np.float32)
+        x[0, 0, 2] = 1 # The first point state is set to be 1
+        strokes = np.zeros([length, 3], dtype=np.float32)
+        strokes[0, :] = x[0, 0, :]
+
+        #state = sess.run(self.stacked_cell.zero_state(1, tf.float32))
+
+        for i in range(length - 1):
+            feed_dict = {self.x: x, self.init_state: state}
+            end_of_stroke, pi, mu1, mu2, sigma1, sigma2, rho, state = sess.run(
+                [self.end_of_stroke, self.pi, self.mu1, self.mu2,
+                 self.sigma1, self.sigma2, self.rho, self.final_state],
+                feed_dict=feed_dict
+            )
+        
+            x = np.zeros([1, 1, 3], np.float32)
+            r = np.random.rand()
+            accu = 0
+            for m in range(self.args.M):
+                accu += pi[0, m]
+                if accu > r:
+                    x[0, 0, 0:2] = np.random.multivariate_normal(
+                        [mu1[0, m], mu2[0, m]],
+                        [[np.square(sigma1[0, m]), rho[0, m] * sigma1[0, m] * sigma2[0, m]],
+                         [rho[0, m] * sigma1[0, m] * sigma2[0, m], np.square(sigma2[0, m])]]
+                    )
+                    break
+            e = np.random.rand() # bernouli
+            if e < end_of_stroke:
+                x[0, 0, 2] = 1
+            else:
+                x[0, 0, 2] = 0
+            strokes[i + 1, :] = x[0, 0, :]
+        if self.args.mode == 'synthesis':
+            # print kappa_list
+            import matplotlib.pyplot as plt
+            plt.imshow(kappa_list, interpolation='nearest')
+            plt.show()
+            plt.imshow(phi_list, interpolation='nearest')
+            plt.show()
+            plt.imshow(w_list, interpolation='nearest')
+            plt.show()
+        return strokes
