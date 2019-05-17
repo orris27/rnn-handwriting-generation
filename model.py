@@ -119,7 +119,7 @@ class Model(torch.nn.Module):
 #                feed_dict=feed_dict
 #            )
         
-            self.output_list, self.final_state = self.stacked_cell(self.x)
+            self.output_list, self.final_state = self.stacked_cell(x)
             self.end_of_stroke = 1 / (1 + torch.exp(self.output[:, 0])) # (?,), 
             pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = torch.split(self.output[:, 1:], self.args.M, 1)
             pi_exp = torch.exp(pi_hat * (1 + self.args.b)) # args.b=3
@@ -148,13 +148,4 @@ class Model(torch.nn.Module):
             else:
                 x[0, 0, 2] = 0
             strokes[i + 1, :] = x[0, 0, :]
-        if self.args.mode == 'synthesis':
-            # print kappa_list
-            import matplotlib.pyplot as plt
-            plt.imshow(kappa_list, interpolation='nearest')
-            plt.show()
-            plt.imshow(phi_list, interpolation='nearest')
-            plt.show()
-            plt.imshow(w_list, interpolation='nearest')
-            plt.show()
         return strokes
