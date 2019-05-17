@@ -160,7 +160,8 @@ def draw_strokes_pdf(data, param, factor=10, svg_filename = 'sample_pdf.svg'):
 def vectorization(c, char_dict):
     x = np.zeros((len(c), len(char_dict) + 1), dtype=np.bool)
     for i, c_i in enumerate(c):
-        if char_dict.has_key(c_i):
+        #if char_dict.has_key(c_i):
+        if c_i in char_dict:
             x[i, char_dict[c_i]] = 1
         else:
             x[i, 0] = 1
