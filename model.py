@@ -74,7 +74,7 @@ class Model(torch.nn.Module):
 
 
         self.end_of_stroke = 1 / (1 + torch.exp(self.output[:, 0])) # (?,), 
-        pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = torch.split(self.output[:, 1:], 6, 1)
+        pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = torch.split(self.output[:, 1:], self.args.M, 1)
         pi_exp = torch.exp(pi_hat * (1 + self.args.b)) # args.b=3
         pi_exp_sum = torch.reduce_sum(pi_exp, 1)
         self.pi = pi_exp / expand(pi_exp_sum, 1, self.args.M)
