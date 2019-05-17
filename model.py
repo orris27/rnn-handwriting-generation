@@ -3,7 +3,7 @@ import torch
 import numpy as np
 from utils import vectorization
 
-class Model():
+class Model(torch.nn.Module):
     def fit(self, x, y):
         '''
             x: (batch_size, args.T, 3) # args.T=300 if train else 1, (batch_size, T, 3)
