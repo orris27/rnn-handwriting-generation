@@ -113,12 +113,23 @@ class Model(torch.nn.Module):
 
         for i in range(length - 1):
             feed_dict = {self.x: x, self.init_state: state}
-            end_of_stroke, pi, mu1, mu2, sigma1, sigma2, rho, state = sess.run(
-                [self.end_of_stroke, self.pi, self.mu1, self.mu2,
-                 self.sigma1, self.sigma2, self.rho, self.final_state],
-                feed_dict=feed_dict
-            )
+#            end_of_stroke, pi, mu1, mu2, sigma1, sigma2, rho, state = sess.run(
+#                [self.end_of_stroke, self.pi, self.mu1, self.mu2,
+#                 self.sigma1, self.sigma2, self.rho, self.final_state],
+#                feed_dict=feed_dict
+#            )
         
+            self.output_list, self.final_state = self.stacked_cell(self.x)
+            self.end_of_stroke = 1 / (1 + torch.exp(self.output[:, 0])) # (?,), 
+            pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = torch.split(self.output[:, 1:], self.args.M, 1)
+            pi_exp = torch.exp(pi_hat * (1 + self.args.b)) # args.b=3
+            pi_exp_sum = torch.sum(pi_exp, 1)
+            self.pi = pi_exp / expand(pi_exp_sum, 1, self.args.M)
+            self.sigma1 = torch.exp(sigma1_hat - self.args.b)
+            self.sigma2 = torch.exp(sigma2_hat - self.args.b)
+            self.rho = torch.tanh(rho_hat)
+            end_of_stroke, pi, mu1, mu2, sigma1, sigma2, rho = end_of_stroke.cpu().numpy(), pi.cpu().numpy(), mu1.cpu().numpy(), mu2.cpu().numpy(), sigma1.cpu().numpy, sigma2.cpu().numpy(), rho.cpu().numpy()
+
             x = np.zeros([1, 1, 3], np.float32)
             r = np.random.rand()
             accu = 0
