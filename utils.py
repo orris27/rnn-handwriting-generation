@@ -160,7 +160,8 @@ def draw_strokes_pdf(data, param, factor=10, svg_filename = 'sample_pdf.svg'):
 def vectorization(c, char_dict):
     x = np.zeros((len(c), len(char_dict) + 1), dtype=np.bool)
     for i, c_i in enumerate(c):
-        if char_dict.has_key(c_i):
+        #if char_dict.has_key(c_i):
+        if c_i in char_dict:
             x[i, char_dict[c_i]] = 1
         else:
             x[i, 0] = 1
@@ -259,7 +260,7 @@ class DataLoader():
                     if (i + num + 1 < len(txt)):
                         return txt[i + num + 1][0:-1]
                     else:
-                        print "error in " + filename
+                        print("error in " + filename)
                         return None
 
         # build stroke database of every xml file inside iam database
@@ -301,10 +302,10 @@ class DataLoader():
                 self.c.append(self.raw_c[i])
                 counter += int(len(data)/((self.seq_length+2))) # number of equiv batches this datapoint is worth
 
-        print "%d strokes available" % len(self.data)
+        print("%d strokes available" % len(self.data))
         # minus 1, since we want the ydata to be a shifted version of x data
         self.num_batches = int(counter / self.batch_size)
-        self.max_U = self.seq_length / self.points_per_char
+        self.max_U = int(self.seq_length / self.points_per_char)
         self.char_to_indices = dict((c, i + 1) for i, c in enumerate(self.chars)) # 0 for unknown
         self.c_vec = []
         for i in range(len(self.c)):
@@ -341,4 +342,5 @@ class DataLoader():
             self.pointer = 0
     def reset_batch_pointer(self):
         self.pointer = 0
+
 
