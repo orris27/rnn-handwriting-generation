@@ -28,6 +28,9 @@ class Model(torch.nn.Module):
 
         self.optimizer = torch.optim.Adam(params=self.parameters(), lr=args.learning_rate)
 
+    def _expand(x, dim, N):
+        #return tf.concat(dim, [tf.expand_dims(x, dim) for _ in range(N)])
+        return torch.cat([x.unsqueeze(dim) for _ in range(N)], dim)
         
     def fit(self, x, y):
         '''
@@ -39,9 +42,6 @@ class Model(torch.nn.Module):
                 - 2 * rho * (x1 - mu1) * (x2 - mu2) / (sigma1 * sigma2)
             return torch.exp(-z / (2 * (1 - torch.pow(rho, 2)))) / \
                    (2 * np.pi * sigma1 * sigma2 * torch.sqrt(1 - torch.pow(rho, 2)))
-        def expand(x, dim, N):
-            #return tf.concat(dim, [tf.expand_dims(x, dim) for _ in range(N)])
-            return torch.cat([x.unsqueeze(dim) for _ in range(N)], dim)
         self.x = torch.Tensor(x).to(device)
         self.y = torch.Tensor(y).to(device)
 
@@ -77,12 +77,12 @@ class Model(torch.nn.Module):
         pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = torch.split(self.output[:, 1:], self.args.M, 1)
         pi_exp = torch.exp(pi_hat * (1 + self.args.b)) # args.b=3
         pi_exp_sum = torch.sum(pi_exp, 1)
-        self.pi = pi_exp / expand(pi_exp_sum, 1, self.args.M)
+        self.pi = pi_exp / self._expand(pi_exp_sum, 1, self.args.M)
         self.sigma1 = torch.exp(sigma1_hat - self.args.b)
         self.sigma2 = torch.exp(sigma2_hat - self.args.b)
         self.rho = torch.tanh(rho_hat)
         self.gaussian = self.pi * bivariate_gaussian(
-            expand(y1, 1, self.args.M), expand(y2, 1, self.args.M),
+            self._expand(y1, 1, self.args.M), self._expand(y2, 1, self.args.M),
             self.mu1, self.mu2, self.sigma1, self.sigma2, self.rho
         )
         eps = 1e-20
@@ -125,7 +125,7 @@ class Model(torch.nn.Module):
             pi_hat, mu1, mu2, sigma1_hat, sigma2_hat, rho_hat = torch.split(output[:, 1:], self.args.M, 1)
             pi_exp = torch.exp(pi_hat * (1 + self.args.b)) # args.b=3
             pi_exp_sum = torch.sum(pi_exp, 1)
-            pi = pi_exp / expand(pi_exp_sum, 1, self.args.M)
+            pi = pi_exp / self._expand(pi_exp_sum, 1, self.args.M)
             sigma1 = torch.exp(sigma1_hat - self.args.b)
             sigma2 = torch.exp(sigma2_hat - self.args.b)
             rho = torch.tanh(rho_hat)
