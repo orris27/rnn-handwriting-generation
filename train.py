@@ -16,7 +16,7 @@ args.action = 'train'
 
 model = m.Model(args).to(device)
 for e in range(args.num_epochs):
-    print "epoch %d" % e
+    print("epoch %d" % e)
     data_loader.reset_batch_pointer()
     for b in range(data_loader.num_batches):
         x, y, c_vec, c = data_loader.next_batch()
