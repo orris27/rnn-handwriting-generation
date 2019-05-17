@@ -129,7 +129,7 @@ class Model(torch.nn.Module):
             sigma1 = torch.exp(sigma1_hat - self.args.b)
             sigma2 = torch.exp(sigma2_hat - self.args.b)
             rho = torch.tanh(rho_hat)
-            end_of_stroke, pi, mu1, mu2, sigma1, sigma2, rho = end_of_stroke.cpu().detach().numpy(), pi.cpu().detach().numpy(), mu1.cpu().detach().numpy(), mu2.cpu().detach().numpy(), sigma1.cpu().detach().numpy, sigma2.cpu().detach().numpy(), rho.cpu().detach().numpy()
+            end_of_stroke, pi, mu1, mu2, sigma1, sigma2, rho = end_of_stroke.cpu().detach().numpy(), pi.cpu().detach().numpy(), mu1.cpu().detach().numpy(), mu2.cpu().detach().numpy(), sigma1.cpu().detach().numpy(), sigma2.cpu().detach().numpy(), rho.cpu().detach().numpy()
 
             x = np.zeros([1, 1, 3], np.float32)
             r = np.random.rand()
