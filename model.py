@@ -8,15 +8,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class Model(torch.nn.Module):
     def __init__(self, args):
         super(Model, self).__init__()
-        def bivariate_gaussian(x1, x2, mu1, mu2, sigma1, sigma2, rho):
-            z = torch.pow((x1 - mu1) / sigma1, 2) + torch.pow((x2 - mu2) / sigma2, 2) \
-                - 2 * rho * (x1 - mu1) * (x2 - mu2) / (sigma1 * sigma2)
-            return torch.exp(-z / (2 * (1 - torch.pow(rho, 2)))) / \
-                   (2 * np.pi * sigma1 * sigma2 * torch.sqrt(1 - torch.pow(rho, 2)))
 
-        def expand(x, dim, N):
-            #return tf.concat(dim, [tf.expand_dims(x, dim) for _ in range(N)])
-            return torch.cat([x.unsqueeze(dim) for _ in range(N)], dim)
 
         if args.action == 'train':
             args.b == 0
@@ -42,6 +34,14 @@ class Model(torch.nn.Module):
             x: (batch_size, args.T, 3) # args.T=300 if train else 1, (batch_size, T, 3)
             y: (batch_size, args.T, 3)
         '''
+        def bivariate_gaussian(x1, x2, mu1, mu2, sigma1, sigma2, rho):
+            z = torch.pow((x1 - mu1) / sigma1, 2) + torch.pow((x2 - mu2) / sigma2, 2) \
+                - 2 * rho * (x1 - mu1) * (x2 - mu2) / (sigma1 * sigma2)
+            return torch.exp(-z / (2 * (1 - torch.pow(rho, 2)))) / \
+                   (2 * np.pi * sigma1 * sigma2 * torch.sqrt(1 - torch.pow(rho, 2)))
+        def expand(x, dim, N):
+            #return tf.concat(dim, [tf.expand_dims(x, dim) for _ in range(N)])
+            return torch.cat([x.unsqueeze(dim) for _ in range(N)], dim)
         self.x = torch.Tensor(x).to(device)
         self.y = torch.Tensor(y).to(device)
 
