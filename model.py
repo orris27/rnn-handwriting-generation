@@ -4,6 +4,37 @@ import numpy as np
 from utils import vectorization
 
 class Model(torch.nn.Module):
+    def __init__(self, args):
+        super(Model, self).__init__()
+        def bivariate_gaussian(x1, x2, mu1, mu2, sigma1, sigma2, rho):
+            z = torch.pow((x1 - mu1) / sigma1, 2) + torch.pow((x2 - mu2) / sigma2, 2) \
+                - 2 * rho * (x1 - mu1) * (x2 - mu2) / (sigma1 * sigma2)
+            return torch.exp(-z / (2 * (1 - torch.pow(rho, 2)))) / \
+                   (2 * np.pi * sigma1 * sigma2 * torch.sqrt(1 - torch.pow(rho, 2)))
+
+        def expand(x, dim, N):
+            #return tf.concat(dim, [tf.expand_dims(x, dim) for _ in range(N)])
+            return torch.cat([x.unsqueeze(dim) for _ in range(N)], dim)
+
+        if args.action == 'train':
+            args.b == 0
+        self.args = args
+
+        self.NOUT = 1 + self.args.M * 6  # end_of_stroke, num_of_gaussian * (pi + 2 * (mu + sigma) + rho)
+        self.fc_output = torch.nn.Linear(args.rnn_state_size, self.NOUT)
+
+
+#        #self.cell = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_state_size) # args.rnn_state_size=400
+#        #self.stacked_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * args.num_layers) # args.num_layers=2
+#        def create_lstm_cell(lstm_size):
+#            lstm_cell = tf.contrib.rnn.BasicLSTMCell(lstm_size, state_is_tuple=True)
+#            return lstm_cell
+#        self.stacked_cell = tf.nn.rnn_cell.MultiRNNCell([create_lstm_cell(args.rnn_state_size) for _ in range(args.num_layers)])
+        self.stacked_cell = torch.nn.LSTM(input_size=3, hidden_size=args.rnn_state_size, num_layers=2, batch_first=True)
+
+        self.optimizer = torch.optim.Adam(params=self.parameters(), lr=args.learning_rate)
+
+        
     def fit(self, x, y):
         '''
             x: (batch_size, args.T, 3) # args.T=300 if train else 1, (batch_size, T, 3)
@@ -64,36 +95,8 @@ class Model(torch.nn.Module):
         self.optimizer.step()
 
 
-    def __init__(self, args):
-        def bivariate_gaussian(x1, x2, mu1, mu2, sigma1, sigma2, rho):
-            z = torch.pow((x1 - mu1) / sigma1, 2) + torch.pow((x2 - mu2) / sigma2, 2) \
-                - 2 * rho * (x1 - mu1) * (x2 - mu2) / (sigma1 * sigma2)
-            return torch.exp(-z / (2 * (1 - torch.pow(rho, 2)))) / \
-                   (2 * np.pi * sigma1 * sigma2 * torch.sqrt(1 - torch.pow(rho, 2)))
-
-        def expand(x, dim, N):
-            #return tf.concat(dim, [tf.expand_dims(x, dim) for _ in range(N)])
-            return torch.cat([x.unsqueeze(dim) for _ in range(N)], dim)
-
-        if args.action == 'train':
-            args.b == 0
-        self.args = args
-
-        self.NOUT = 1 + self.args.M * 6  # end_of_stroke, num_of_gaussian * (pi + 2 * (mu + sigma) + rho)
-        self.fc_output = torch.nn.Linear(args.rnn_state_size, self.NOUT)
 
 
-#        #self.cell = tf.nn.rnn_cell.BasicLSTMCell(args.rnn_state_size) # args.rnn_state_size=400
-#        #self.stacked_cell = tf.nn.rnn_cell.MultiRNNCell([self.cell] * args.num_layers) # args.num_layers=2
-#        def create_lstm_cell(lstm_size):
-#            lstm_cell = tf.contrib.rnn.BasicLSTMCell(lstm_size, state_is_tuple=True)
-#            return lstm_cell
-#        self.stacked_cell = tf.nn.rnn_cell.MultiRNNCell([create_lstm_cell(args.rnn_state_size) for _ in range(args.num_layers)])
-        self.stacked_cell = torch.nn.LSTM(input_size=3, hidden_size=args.rnn_state_size, num_layers=2, batch_first=True)
-
-        self.optimizer = torch.optim.Adam(params=self.parameters(), lr=args.learning_rate)
-
-        
 #    def sample(self, sess, length, str=None):
 #        x = np.zeros([1, 1, 3], np.float32)
 #        x[0, 0, 2] = 1 # The first point state is set to be 1
