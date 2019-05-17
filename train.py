@@ -15,6 +15,9 @@ args.c_dimension = len(data_loader.chars) + 1
 args.action = 'train'
 
 model = m.Model(args).to(device)
+if os.path.exists(args.model_path):
+    print('Start loading model: %s'(args.model_path))
+    model.load_state_dict(torch.load(args.model_path))
 for e in range(args.num_epochs):
     print("epoch %d" % e)
     data_loader.reset_batch_pointer()
