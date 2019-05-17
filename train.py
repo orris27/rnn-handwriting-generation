@@ -24,11 +24,6 @@ for e in range(args.num_epochs):
     data_loader.reset_batch_pointer()
     for b in range(data_loader.num_batches):
         x, y, c_vec, c = data_loader.next_batch()
-
-        import pickle
-        with open('x.pkl', 'wb') as f:
-            pickle.dump(x, f)
-
         if b % 100 == 0:
             print('batches %d'%(b), end=':')
             model.fit(x, y)
