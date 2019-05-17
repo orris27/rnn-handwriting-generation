@@ -66,7 +66,7 @@ class Model(torch.nn.Module):
 #                                      output_w, output_b) # (batch_size, NOUT=121)
 
         #self.output = self.fc_output((torch.cat(self.output_list, 1).view(-1, args.rnn_state_size)))
-        self.output = self.fc_output(self.output_list.view(-1, args.rnn_state_size))
+        self.output = self.fc_output(self.output_list.view(-1, self.args.rnn_state_size))
 
         #y1, y2, y_end_of_stroke = tf.unstack(tf.reshape(self.y, [-1, 3]), axis=1)
         y1, y2, y_end_of_stroke = torch.unbind(self.y.view(-1, 3), dim=1)
@@ -74,14 +74,14 @@ class Model(torch.nn.Module):
 
         self.end_of_stroke = 1 / (1 + torch.exp(self.output[:, 0])) # (?,), 
         pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = torch.split(self.output[:, 1:], 6, 1)
-        pi_exp = torch.exp(pi_hat * (1 + args.b)) # args.b=3
+        pi_exp = torch.exp(pi_hat * (1 + self.args.b)) # args.b=3
         pi_exp_sum = torch.reduce_sum(pi_exp, 1)
-        self.pi = pi_exp / expand(pi_exp_sum, 1, args.M)
-        self.sigma1 = torch.exp(sigma1_hat - args.b)
-        self.sigma2 = torch.exp(sigma2_hat - args.b)
+        self.pi = pi_exp / expand(pi_exp_sum, 1, self.args.M)
+        self.sigma1 = torch.exp(sigma1_hat - self.args.b)
+        self.sigma2 = torch.exp(sigma2_hat - self.args.b)
         self.rho = torch.tanh(rho_hat)
         self.gaussian = self.pi * bivariate_gaussian(
-            expand(y1, 1, args.M), expand(y2, 1, args.M),
+            expand(y1, 1, self.args.M), expand(y2, 1, self.args.M),
             self.mu1, self.mu2, self.sigma1, self.sigma2, self.rho
         )
         eps = 1e-20
@@ -91,7 +91,7 @@ class Model(torch.nn.Module):
                     + (1 - self.end_of_stroke + eps) * (1 - y_end_of_stroke))
         )
 
-        loss = (self.loss_gaussian + self.loss_bernoulli) / (args.batch_size * args.T)
+        loss = (self.loss_gaussian + self.loss_bernoulli) / (self.args.batch_size * self.args.T)
 
         print('loss:', loss)
 
