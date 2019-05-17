@@ -89,7 +89,7 @@ class Model():
 #            lstm_cell = tf.contrib.rnn.BasicLSTMCell(lstm_size, state_is_tuple=True)
 #            return lstm_cell
 #        self.stacked_cell = tf.nn.rnn_cell.MultiRNNCell([create_lstm_cell(args.rnn_state_size) for _ in range(args.num_layers)])
-        self.stacked_cell = torch.nn.LSTM(hidden_size=args.rnn_state_size, num_layers=2, batch_first=True)
+        self.stacked_cell = torch.nn.LSTM(input_size=3, hidden_size=args.rnn_state_size, num_layers=2, batch_first=True)
 
         self.optimizer = torch.optim.Adam(params=self.parameters(), lr=args.learning_rate)
 
