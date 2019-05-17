@@ -112,7 +112,7 @@ class Model(torch.nn.Module):
         #state = sess.run(self.stacked_cell.zero_state(1, tf.float32))
 
         for i in range(length - 1):
-            feed_dict = {self.x: x, self.init_state: state}
+#            feed_dict = {self.x: x, self.init_state: state}
 #            end_of_stroke, pi, mu1, mu2, sigma1, sigma2, rho, state = sess.run(
 #                [self.end_of_stroke, self.pi, self.mu1, self.mu2,
 #                 self.sigma1, self.sigma2, self.rho, self.final_state],
