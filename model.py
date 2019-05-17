@@ -28,7 +28,7 @@ class Model(torch.nn.Module):
 
         self.optimizer = torch.optim.Adam(params=self.parameters(), lr=args.learning_rate)
 
-    def _expand(x, dim, N):
+    def _expand(self, x, dim, N):
         #return tf.concat(dim, [tf.expand_dims(x, dim) for _ in range(N)])
         return torch.cat([x.unsqueeze(dim) for _ in range(N)], dim)
         
