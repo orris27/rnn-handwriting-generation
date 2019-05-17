@@ -66,7 +66,8 @@ class Model(torch.nn.Module):
 #                                      output_w, output_b) # (batch_size, NOUT=121)
 
         #self.output = self.fc_output((torch.cat(self.output_list, 1).view(-1, args.rnn_state_size)))
-        self.output = self.fc_output(self.output_list.view(-1, self.args.rnn_state_size))
+        #self.output = self.fc_output(self.output_list.view(-1, self.args.rnn_state_size))
+        self.output = self.fc_output(self.output_list.reshape(-1, self.args.rnn_state_size))
 
         #y1, y2, y_end_of_stroke = tf.unstack(tf.reshape(self.y, [-1, 3]), axis=1)
         y1, y2, y_end_of_stroke = torch.unbind(self.y.view(-1, 3), dim=1)
