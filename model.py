@@ -119,7 +119,7 @@ class Model(torch.nn.Module):
 #                feed_dict=feed_dict
 #            )
         
-            self.output_list, self.final_state = self.stacked_cell(x)
+            self.output_list, self.final_state = self.stacked_cell(torch.Tensor(x).to(device))
             self.end_of_stroke = 1 / (1 + torch.exp(self.output[:, 0])) # (?,), 
             pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = torch.split(self.output[:, 1:], self.args.M, 1)
             pi_exp = torch.exp(pi_hat * (1 + self.args.b)) # args.b=3
