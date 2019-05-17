@@ -21,5 +21,5 @@ for e in range(args.num_epochs):
     for b in range(data_loader.num_batches):
         x, y, c_vec, c = data_loader.next_batch()
         if b % 100 == 0:
-            print('batches %d'%(b))
+            print('batches %d'%(b), end=':')
             model.fit(x, y)

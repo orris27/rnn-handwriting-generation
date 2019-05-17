@@ -94,7 +94,7 @@ class Model(torch.nn.Module):
 
         loss = (self.loss_gaussian + self.loss_bernoulli) / (self.args.batch_size * self.args.T)
 
-        print('loss:', loss)
+        print('loss=', loss.cpu().item())
 
         self.optimizer.zero_grad()
         loss.backward()
