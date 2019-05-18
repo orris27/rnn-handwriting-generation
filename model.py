@@ -20,8 +20,8 @@ class Model():
         self.x = tf.placeholder(dtype=tf.float32, shape=[None, args.T, 3]) # args.T=300 if train else 1, (batch_size, T, 3)
         self.y = tf.placeholder(dtype=tf.float32, shape=[None, args.T, 3])
 
-        x = tf.split(self.x, args.T, 1) # (T, batch_size, 1, 3)
-        x_list = [tf.squeeze(x_i, [1]) for x_i in x] # (T, batch_size, 3)
+        #x = tf.split(self.x, args.T, 1) # (T, batch_size, 1, 3)
+        #x_list = [tf.squeeze(x_i, [1]) for x_i in x] # (T, batch_size, 3)
         def create_lstm_cell(lstm_size):
             lstm_cell = tf.contrib.rnn.BasicLSTMCell(lstm_size, state_is_tuple=True)
             return lstm_cell
@@ -30,7 +30,8 @@ class Model():
 
         self.init_state = self.stacked_cell.zero_state(args.batch_size, tf.float32)
 
-        self.output_list, self.final_state = tf.nn.dynamic_rnn(self.stacked_cell, tf.transpose(x_list, perm=[1, 0, 2]), initial_state=self.init_state)
+        #self.output_list, self.final_state = tf.nn.dynamic_rnn(self.stacked_cell, tf.transpose(x_list, perm=[1, 0, 2]), initial_state=self.init_state)
+        self.output_list, self.final_state = tf.nn.dynamic_rnn(self.stacked_cell, self.x, initial_state=self.init_state)
         NOUT = 1 + args.M * 6  # end_of_stroke, num_of_gaussian * (pi + 2 * (mu + sigma) + rho)
         output_w = tf.Variable(tf.constant(0.1, dtype=tf.float32, shape=[args.rnn_state_size, NOUT])) # args.rnn_state_size=400
         output_b = tf.Variable(tf.constant(0.1, dtype=tf.float32, shape=[NOUT]))
