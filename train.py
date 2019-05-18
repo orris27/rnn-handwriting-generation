@@ -27,6 +27,6 @@ for e in range(args.num_epochs):
         model.fit(x, y)
         if b % 100 == 0:
             print('batches %d: loss=%.6f'%(b, model.loss.cpu().item()))
-    if e % 20 == 0:
+    if e % 5 == 0:
         print('Start saving model: %s'%(args.model_path))
         torch.save(model.state_dict(), args.model_path)

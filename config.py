@@ -5,8 +5,6 @@ parser.add_argument('--load', type=bool, default=False,
                     help='')
 parser.add_argument('--model_path', type=str, default='data/model.pkl',
                     help='')
-parser.add_argument('--mode', type=str, default='predict',
-                    help='predict or synthesis')
 parser.add_argument('--batch_size', type=int, default=50,
                     help='minibatch size')
 parser.add_argument('--chars', type=str, default='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ',
