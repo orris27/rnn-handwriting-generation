@@ -21,7 +21,7 @@ ckpt = tf.train.get_checkpoint_state('save_%s' % args.mode)
 with tf.Session() as sess:
     saver.restore(sess, ckpt.model_checkpoint_path)
     strokes = model.sample(sess, 800)
-    print strokes
+    print(strokes)
     import pickle
     with open('strokes.pkl', 'wb') as f:
         pickle.dump(strokes, f)
