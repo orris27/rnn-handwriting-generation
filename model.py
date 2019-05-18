@@ -52,7 +52,7 @@ class Model(torch.nn.Module):
         sigma1 = torch.exp(sigma1_hat - self.args.b)
         sigma2 = torch.exp(sigma2_hat - self.args.b)
         rho = torch.tanh(rho_hat)
-        gaussian = self.pi * self._bivariate_gaussian(
+        gaussian = pi * self._bivariate_gaussian(
             self._expand(y1, 1, self.args.M), self._expand(y2, 1, self.args.M),
             mu1, mu2, sigma1, sigma2, rho
         )
