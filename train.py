@@ -13,10 +13,6 @@ args.U = data_loader.max_U
 args.c_dimension = len(data_loader.chars) + 1
 args.action = 'train'
 
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-tf.enable_eager_execution(config=config)
-
 model = m.Model(args)
 with tf.Session() as sess:
     tf.initialize_all_variables().run()
