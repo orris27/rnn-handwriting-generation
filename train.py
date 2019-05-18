@@ -24,9 +24,9 @@ for e in range(args.num_epochs):
     data_loader.reset_batch_pointer()
     for b in range(data_loader.num_batches):
         x, y, c_vec, c = data_loader.next_batch()
+        model.fit(x, y)
         if b % 100 == 0:
-            print('batches %d'%(b), end=':')
-            model.fit(x, y)
+            print('batches %d: loss=%.6f'%(b, model.loss.cpu().item()))
     if e % 20 == 0:
         print('Start saving model: %s'%(args.model_path))
         torch.save(model.state_dict(), args.model_path)

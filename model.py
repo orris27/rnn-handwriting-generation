@@ -63,12 +63,11 @@ class Model(torch.nn.Module):
                     + (1 - end_of_stroke + eps) * (1 - y_end_of_stroke))
         )
 
-        loss = (loss_gaussian + loss_bernoulli) / (self.args.batch_size * self.args.T)
+        self.loss = (loss_gaussian + loss_bernoulli) / (self.args.batch_size * self.args.T)
 
-        print('loss=', loss.cpu().item())
 
         self.optimizer.zero_grad()
-        loss.backward()
+        self.loss.backward()
         self.optimizer.step()
 
 
