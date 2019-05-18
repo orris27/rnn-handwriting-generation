@@ -9,7 +9,6 @@ class Model(torch.nn.Module):
     def __init__(self, args):
         super(Model, self).__init__()
 
-
         if args.action == 'train':
             args.b == 0
         self.args = args
@@ -40,31 +39,31 @@ class Model(torch.nn.Module):
 
         output_list, final_state = self.stacked_cell(x)
 
-        output = self.fc_output(output_list.reshape(-1, self.args.rnn_state_size))
+        output = self.fc_output(output_list.reshape(-1, self.args.rnn_state_size)) # (batch_size * args.T, self.NOUT=121)
 
-        y1, y2, y_end_of_stroke = torch.unbind(y.view(-1, 3), dim=1)
+        y1, y2, y_end_of_stroke = torch.unbind(y.view(-1, 3), dim=1) # (batch_size * args.T, )
 
 
-        self.end_of_stroke = 1 / (1 + torch.exp(output[:, 0])) # (?,), 
-        pi_hat, self.mu1, self.mu2, sigma1_hat, sigma2_hat, rho_hat = torch.split(output[:, 1:], self.args.M, 1)
+        end_of_stroke = 1 / (1 + torch.exp(output[:, 0])) # (batch_size * args.T,) 
+        pi_hat, mu1, mu2, sigma1_hat, sigma2_hat, rho_hat = torch.split(output[:, 1:], self.args.M, 1)
         pi_exp = torch.exp(pi_hat * (1 + self.args.b)) # args.b=3
         pi_exp_sum = torch.sum(pi_exp, 1)
-        self.pi = pi_exp / self._expand(pi_exp_sum, 1, self.args.M)
-        self.sigma1 = torch.exp(sigma1_hat - self.args.b)
-        self.sigma2 = torch.exp(sigma2_hat - self.args.b)
-        self.rho = torch.tanh(rho_hat)
-        self.gaussian = self.pi * self._bivariate_gaussian(
+        pi = pi_exp / self._expand(pi_exp_sum, 1, self.args.M)
+        sigma1 = torch.exp(sigma1_hat - self.args.b)
+        sigma2 = torch.exp(sigma2_hat - self.args.b)
+        rho = torch.tanh(rho_hat)
+        gaussian = self.pi * self._bivariate_gaussian(
             self._expand(y1, 1, self.args.M), self._expand(y2, 1, self.args.M),
-            self.mu1, self.mu2, self.sigma1, self.sigma2, self.rho
+            mu1, mu2, sigma1, sigma2, rho
         )
         eps = 1e-20
-        self.loss_gaussian = torch.sum(-torch.log(torch.sum(self.gaussian, 1) + eps))
-        self.loss_bernoulli = torch.sum(
-            -torch.log((self.end_of_stroke + eps) * y_end_of_stroke # e_t * (x_{t+1})_3 + (1 - e_t) * (1 - (x_{t+1})_3)
-                    + (1 - self.end_of_stroke + eps) * (1 - y_end_of_stroke))
+        loss_gaussian = torch.sum(-torch.log(torch.sum(gaussian, 1) + eps))
+        loss_bernoulli = torch.sum(
+            -torch.log((end_of_stroke + eps) * y_end_of_stroke # e_t * (x_{t+1})_3 + (1 - e_t) * (1 - (x_{t+1})_3)
+                    + (1 - end_of_stroke + eps) * (1 - y_end_of_stroke))
         )
 
-        loss = (self.loss_gaussian + self.loss_bernoulli) / (self.args.batch_size * self.args.T)
+        loss = (loss_gaussian + loss_bernoulli) / (self.args.batch_size * self.args.T)
 
         print('loss=', loss.cpu().item())
 
