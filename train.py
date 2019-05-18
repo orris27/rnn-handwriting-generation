@@ -14,7 +14,7 @@ args.c_dimension = len(data_loader.chars) + 1
 args.action = 'train'
 
 model = m.Model(args)
-with tf.Session() as sess:
+with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
     tf.initialize_all_variables().run()
     saver = tf.train.Saver(tf.all_variables())
     for e in range(args.num_epochs):
