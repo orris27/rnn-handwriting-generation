@@ -20,11 +20,7 @@ ckpt = tf.train.get_checkpoint_state('save_%s' % args.mode)
 
 with tf.Session() as sess:
     saver.restore(sess, ckpt.model_checkpoint_path)
-    if args.mode == 'predict':
-        strokes = model.sample(sess, 800)
-    if args.mode == 'synthesis':
-        str_vec = vectorization(str, data_loader.char_to_indices)
-        strokes = model.sample(sess, len(str) * args.points_per_char, str=str_vec)
+    strokes = model.sample(sess, 800)
     print strokes
     import pickle
     with open('strokes.pkl', 'wb') as f:

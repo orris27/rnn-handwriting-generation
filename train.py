@@ -22,18 +22,7 @@ with tf.Session() as sess:
         data_loader.reset_batch_pointer()
         for b in range(data_loader.num_batches):
             x, y, c_vec, c = data_loader.next_batch()
-            if args.mode == 'predict':
-                feed_dict = {model.x: x, model.y: y}
-            if args.mode == 'synthesis':
-                feed_dict = {model.x: x, model.y: y, model.c_vec: c_vec}
-            # print c
-            # import matplotlib.pyplot as plt
-            # plt.imshow(c_vec[0], interpolation='nearest')
-            # plt.show()
-            # draw_strokes_random_color(x[0], factor=0.1, svg_filename='train_sample.normal.svg')
-            # print x
-            # print sess.run([model.final_w],
-            #                feed_dict=feed_dict)
+            feed_dict = {model.x: x, model.y: y}
             if b % 100 == 0:
                 loss = sess.run(model.loss, feed_dict=feed_dict)
                 print('batches %d, loss %g' % (b, loss))
